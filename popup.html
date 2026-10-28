@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hush</title>
+  <link rel="stylesheet" href="src/ui.css">
+  <link rel="stylesheet" href="src/fonts.css">
+  <link rel="stylesheet" href="src/popup.css">
+</head>
+<body>
+  <header class="head">
+    <img class="logo" src="icons/icon-32.png" alt="">
+    <h1>Hush</h1>
+    <label class="switch" title="Turn Hush on or off">
+      <input id="enabled" type="checkbox" aria-label="Hush on">
+      <span></span>
+    </label>
+  </header>
+
+  <main class="body">
+    <p id="locked" class="locked hidden">Settings are locked. Unlock them in All settings.</p>
+
+    <section class="card">
+      <div class="card-head"><span class="eyebrow">Layout</span></div>
+      <div class="row-v">
+        <span class="lbl" id="cols-label">Videos per row</span>
+        <div id="cols" class="seg" role="radiogroup" aria-labelledby="cols-label"></div>
+      </div>
+      <label class="row">
+        <span class="lbl">Theater view</span>
+        <span class="switch"><input id="theater" type="checkbox" aria-label="Theater view"><span></span></span>
+      </label>
+      <label class="row">
+        <span class="lbl">Font</span>
+        <select id="font" aria-label="Font"></select>
+      </label>
+    </section>
+
+    <button id="settings" class="primary wide" type="button">All settings</button>
+  </main>
+  <script src="src/common.js"></script>
+  <script src="src/options-data.js"></script>
+  <script src="src/popup.js"></script>
+</body>
+</html>

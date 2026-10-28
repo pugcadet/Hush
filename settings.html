@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hush settings</title>
+  <link rel="icon" href="icons/icon-32.png">
+  <link rel="stylesheet" href="src/ui.css">
+  <link rel="stylesheet" href="src/settings.css">
+  <link rel="stylesheet" href="src/fonts.css">
+</head>
+<body>
+  <div id="lock" class="lock hidden">
+    <div class="lock-card">
+      <img src="icons/icon-128.png" alt="" width="56" height="56">
+      <h1>Settings are locked</h1>
+      <p id="lock-msg" class="muted"></p>
+      <input id="lock-pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">
+      <p id="lock-countdown" class="countdown hidden"></p>
+      <p id="lock-error" class="error hidden"></p>
+      <button id="lock-go" class="primary" type="button">Unlock</button>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <header class="topbar">
+      <img class="logo" src="icons/icon-32.png" alt="">
+      <span class="name">Hush</span>
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 4a7 7 0 1 1 0 14a7 7 0 1 1 0-14 M20 20l-4-4"/></svg>
+        <input id="search" type="search" placeholder="Search options" aria-label="Search options">
+      </label>
+      <span class="spacer"></span>
+      <label class="master"><span id="master-text">Hush is on</span>
+        <span class="switch"><input id="master" type="checkbox" aria-label="Hush on"><span></span></span>
+      </label>
+    </header>
+    <div class="layout">
+      <nav id="nav-list" class="nav" aria-label="Settings sections"></nav>
+      <main id="main" class="main"></main>
+      <aside id="preview" class="preview hidden" aria-live="polite"></aside>
+    </div>
+  </div>
+  <script src="src/common.js"></script>
+  <script src="src/options-data.js"></script>
+  <script src="src/import-untrap.js"></script>
+  <script src="src/preview.js"></script>
+  <script src="src/settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+/* Bundled fonts for the settings-page font preview (generated from SW.FONTS). */
+@font-face{font-family:'Hush Inter';src:url("../fonts/yt/inter.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush Atkinson';src:url("../fonts/yt/atkinson-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush Atkinson';src:url("../fonts/yt/atkinson-700.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush Lexend';src:url("../fonts/yt/lexend.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush Nunito';src:url("../fonts/yt/nunito.woff2") format("woff2");font-weight:200 1000;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush Outfit';src:url("../fonts/yt/outfit.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush Literata';src:url("../fonts/yt/literata.woff2") format("woff2");font-weight:200 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush Lora';src:url("../fonts/yt/lora.woff2") format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Hush JetBrains Mono';src:url("../fonts/yt/jetbrains-mono.woff2") format("woff2");font-weight:100 800;font-style:normal;font-display:swap}

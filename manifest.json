@@ -1,0 +1,98 @@
+{
+  "manifest_version": 3,
+  "name": "Hush for YouTube",
+  "short_name": "Hush",
+  "version": "5.0.0",
+  "description": "A quieter YouTube: hide Shorts, recommendations and clutter, and tidy the layout. Fast and 100% local.",
+  "minimum_chrome_version": "111",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://m.youtube.com/*",
+    "https://www.youtube-nocookie.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*",
+        "https://www.youtube-nocookie.com/*"
+      ],
+      "js": [
+        "src/common.js",
+        "src/options-data.js",
+        "src/yt-data.js",
+        "src/content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "exclude_matches": [
+        "https://www.youtube.com/live_chat*",
+        "https://www.youtube.com/live_chat_replay*"
+      ]
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://www.youtube-nocookie.com/*"
+      ],
+      "js": [
+        "src/main-world.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "world": "MAIN",
+      "exclude_matches": [
+        "https://www.youtube.com/live_chat*",
+        "https://www.youtube.com/live_chat_replay*"
+      ]
+    }
+  ],
+  "action": {
+    "default_title": "Hush",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "options_ui": {
+    "page": "settings.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "toggle-enabled": {
+      "suggested_key": {
+        "default": "Alt+Shift+Y"
+      },
+      "description": "Turn Hush on or off"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/yt/*.woff2"
+      ],
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*",
+        "https://www.youtube-nocookie.com/*"
+      ],
+      "use_dynamic_url": true
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' blob: data: https://yt3.ggpht.com https://yt3.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none'; connect-src https://www.youtube.com"
+  }
+}
