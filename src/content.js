@@ -55,7 +55,7 @@
       document.documentElement.classList.add(flag === "wide" ? "hush-wide" : "hush-theater-pending");
       style.textContent = SW.OPTION_INDEX.watch_auto_theater.css;
       mountStyle();
-      if (flag !== "wide") setTimeout(() => document.documentElement.classList.remove("hush-theater-pending"), 2500);
+      if (flag !== "wide") setTimeout(() => document.documentElement.classList.remove("hush-theater-pending"), 4000);
     }
   } catch {}
 
@@ -128,11 +128,11 @@
     document.cookie = `wide=${value}; domain=.youtube.com; ${attrs}`;
   };
   const theaterMethod = () => (on("watch_auto_theater") ? (SW.opt(cfg, "watch_theater_method") === "youtube" ? "yt" : "wide") : null);
-  let theaterMisses = 0;
-  let theaterClicked = false;
+  let theaterOffSince = 0, theaterClicks = 0, theaterLastClick = 0;
   // "Pending" keeps the watch area invisible (via CSS) until theater is on, so YouTube's own
   // normal-then-theater switch is never seen. A timer always reveals the page, whatever happens.
   let pendingTimer = 0;
+  const PENDING_MAX = 4000; // the page is never kept hidden longer than this, whatever happens
   const endTheaterPending = () => {
     clearTimeout(pendingTimer);
     document.documentElement.classList.remove("hush-theater-pending");
@@ -142,16 +142,22 @@
     if (flexy && flexy.hasAttribute("theater")) return;
     document.documentElement.classList.add("hush-theater-pending");
     clearTimeout(pendingTimer);
-    pendingTimer = setTimeout(endTheaterPending, 2500);
+    pendingTimer = setTimeout(endTheaterPending, PENDING_MAX);
   };
+  // Checked every 200ms for up to ~12s: a full reload can take several seconds before YouTube's player (and its
+  // theater button) is there, and giving up early is what made a refresh "forget" theater. Once the player is there
+  // and theater has stayed off for a moment (YouTube may still switch it on itself), one click; a second one only
+  // if the first didn't take. Then the page shows straight away.
   const theaterOn = () => {
     const flexy = document.querySelector("ytd-watch-flexy");
-    const btn = document.querySelector(".ytp-size-button");
     if (flexy && (flexy.hasAttribute("theater") || flexy.hasAttribute("fullscreen") || document.fullscreenElement)) { endTheaterPending(); return true; }
-    if (!flexy || !btn) return false;
-    if (theaterClicked) return false; // one click per video; keep waiting for YouTube to apply it
-    if (++theaterMisses < 7) return false; // ~1.4s: well after YouTube normally applies it itself
-    theaterClicked = true;
+    if (flexy && flexy.hasAttribute("is-single-column")) { endTheaterPending(); return true; } // a narrow window: no theater view there
+    const btn = document.querySelector("#movie_player .ytp-size-button");
+    if (!flexy || !btn || btn.offsetParent === null) { theaterOffSince = 0; return false; }
+    const now = performance.now();
+    if (!theaterOffSince) theaterOffSince = now;
+    if (now - theaterOffSince < 400 || now - theaterLastClick < 1200 || theaterClicks >= 2) return false;
+    theaterClicks++; theaterLastClick = now;
     btn.click();
     return false;
   };
@@ -194,7 +200,7 @@
     if (!watch) return;
     if (on("disable_autoplay")) retry(autoplayOff, 40, 250);
     if (isEmbed) return;
-    if (theaterMethod() === "yt") { setWideCookie("1"); theaterMisses = 0; theaterClicked = false; retry(theaterOn, 12, 200); }
+    if (theaterMethod() === "yt") { setWideCookie("1"); theaterOffSince = 0; theaterClicks = 0; theaterLastClick = 0; retry(theaterOn, 60, 200); }
     if (on("watch_auto_expand_desc")) retry(expandDescription, 40, 250);
   };
 
@@ -223,19 +229,29 @@
   // Hover previews: YouTube starts them from hover events on the thumbnail (old and new card
   // types play them in different ways). Stopping those events before YouTube sees them
   // prevents every kind of hover playback. Clicks are untouched.
+  // The guard is in place from the very start (before YouTube's own scripts add theirs, which would otherwise run
+  // first); until the settings are read, a small flag from the last visit says whether it's wanted.
   const THUMB_SEL = "ytd-thumbnail, yt-thumbnail-view-model, .yt-lockup-view-model__content-image, ytd-playlist-thumbnail, " +
-    "a#thumbnail, ytd-moving-thumbnail-renderer, ytd-video-preview, #video-preview, ytm-shorts-lockup-view-model a";
+    "a#thumbnail, ytd-moving-thumbnail-renderer, ytd-video-preview, #video-preview, ytm-shorts-lockup-view-model a, animated-thumbnail-overlay-view-model";
   const HOVER_EVENTS = ["mouseover", "mouseenter", "pointerover", "pointerenter", "mousemove", "pointermove"];
+  const HOVER_FLAG = "hush:nohover";
+  let hoverWanted = (() => { try { return localStorage.getItem(HOVER_FLAG) === "1"; } catch { return false; } })();
   const hoverGuard = (e) => {
+    if (!hoverWanted) return;
     const t = e.target;
     if (t && t.nodeType === 1 && t.closest(THUMB_SEL)) e.stopImmediatePropagation();
   };
-  let hoverGuardOn = false;
+  if (!isEmbed) for (const type of HOVER_EVENTS) window.addEventListener(type, hoverGuard, { capture: true, passive: true });
+  // A backstop: a preview that starts playing anyway (YouTube finds new ways) is stopped at once. Only the small
+  // preview player: the real one (movie_player), Shorts and a channel's trailer are never touched.
+  document.addEventListener("play", (e) => {
+    const v = e.target;
+    if (!hoverWanted || !v || v.tagName !== "VIDEO") return;
+    if (v.closest("#inline-preview-player, ytd-video-preview, #video-preview")) { try { v.pause(); v.muted = true; } catch {} }
+  }, true);
   const syncHoverGuard = () => {
-    const want = on("disable_hover_preview");
-    if (want === hoverGuardOn) return;
-    hoverGuardOn = want;
-    for (const type of HOVER_EVENTS) window[want ? "addEventListener" : "removeEventListener"](type, hoverGuard, { capture: true, passive: true });
+    hoverWanted = on("disable_hover_preview");
+    try { hoverWanted ? localStorage.setItem(HOVER_FLAG, "1") : localStorage.removeItem(HOVER_FLAG); } catch {}
   };
 
   // ------------------------------------------------------- Watch Later button on thumbnails
@@ -276,19 +292,23 @@
     }
   };
   const queueWl = () => { if (!wlTimer) wlTimer = setTimeout(() => ("requestIdleCallback" in window ? requestIdleCallback(addWlButtons, { timeout: 800 }) : addWlButtons()), 250); };
+  // Click: added to Watch Later (a green check). Click again: taken off it again.
   const onWlClick = async (e) => {
     const b = e.target && e.target.closest && e.target.closest(".hush-wl");
     if (!b) return;
     e.preventDefault(); e.stopImmediatePropagation(); // don't open the video
-    if (b.classList.contains("done") || b.dataset.busy) return;
+    if (b.dataset.busy) return;
     const thumb = b.parentElement, id = thumb && videoIdOf(thumb);
     if (!id) return;
+    const removing = b.classList.contains("done");
     b.dataset.busy = "1"; b.classList.remove("fail");
-    let added = [];
-    try { added = await SW.yt.addToWatchLater([id]); } catch {}
+    let ok = false;
+    try { ok = removing ? await SW.yt.removeFromWatchLater([id]) : (await SW.yt.addToWatchLater([id])).length > 0; } catch {}
     delete b.dataset.busy;
-    if (added.length) { b.classList.add("done"); b.title = "Added to Watch Later"; }
-    else { b.classList.add("fail"); b.title = "YouTube didn’t accept that — click to try again"; }
+    if (!ok) { b.classList.add("fail"); b.title = "YouTube didn’t accept that — click to try again"; return; }
+    b.classList.toggle("done", !removing);
+    b.title = removing ? "Add to Watch Later" : "In Watch Later — click to take it off";
+    b.setAttribute("aria-label", b.title);
   };
   let wlOn = false;
   const syncWlButtons = () => {

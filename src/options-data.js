@@ -90,6 +90,8 @@
   T("global", "disable_autoplay", "Turn off autoplay of the next video", "", { behavior: true, recommended: true });
   T("global", "disable_hover_preview", "Disable video previews on hover (everywhere, incl. related videos)", hide(
     "ytd-video-preview", "#video-preview", "ytd-moving-thumbnail-renderer", "ytd-thumbnail #mouseover-overlay",
+    // YouTube's newer cards: a moving picture (an animated image, not a video) laid over the thumbnail on hover
+    "animated-thumbnail-overlay-view-model", ".ytAnimatedThumbnailOverlayViewModelHost", "#inline-preview-player",
   ) + rule("ytd-video-preview, #video-preview", "pointer-events:none!important"), { recommended: true, behavior: true });
   S("global", "video_quality", "Preferred video quality", [
     ["auto", "Automatic"], ["hd2160", "2160p"], ["hd1440", "1440p"], ["hd1080", "1080p"],
@@ -362,7 +364,7 @@
     rule(".hush-wl:hover", "background:rgba(0,0,0,.92);opacity:1") +
     rule(".hush-wl svg", "width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none") +
     rule(".hush-wl .ok, .hush-wl .bad", "display:none") +
-    rule(".hush-wl.done .clk, .hush-wl.fail .clk", "display:none") + rule(".hush-wl.done .ok", "display:block") + rule(".hush-wl.fail .bad", "display:block") +
+    rule(".hush-wl.done .clk, .hush-wl.fail .clk", "display:none") + rule(".hush-wl.done .ok", "display:block") + rule(".hush-wl.fail .bad", "display:block") + rule(".hush-wl.done.fail .ok", "display:none") +
     rule(".hush-wl.done", "background:#1f8f4e") + rule(".hush-wl.fail", "background:#b3261e") +
     rule("ytd-thumbnail, yt-thumbnail-view-model", "position:relative") +
     hide("ytd-thumbnail-overlay-toggle-button-renderer", "ytd-thumbnail-hover-overlay-toggle-actions-view-model", "yt-thumbnail-hover-overlay-toggle-actions-view-model"),

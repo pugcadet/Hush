@@ -215,7 +215,9 @@
   /** Remove videos from your Watch Later playlist (same request YouTube's page makes). */
   const removeFromWatchLater = async (ids, ctx) => {
     const good = ids.filter((id) => ID_RE.test(id)).slice(0, 200);
-    if (!good.length || !ctx) return false;
+    if (!good.length) return false;
+    ctx = ctx || (await watchLaterCtx());
+    if (!ctx) return false;
     const auth = await authHeader();
     if (!auth) return false;
     try {

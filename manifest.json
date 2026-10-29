@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Hush for YouTube",
   "short_name": "Hush",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "A quieter YouTube: hide Shorts, recommendations and clutter, and tidy the layout. Fast and 100% local.",
   "minimum_chrome_version": "111",
   "icons": {
